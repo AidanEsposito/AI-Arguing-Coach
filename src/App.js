@@ -1,23 +1,65 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
+import "./App.css";
 
 function App() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+
+  async function sendMessage() {
+    if (!input.trim()) return;
+
+    const newMessages = [
+      ...messages,
+      { role: "user", content: input }
+    ];
+
+    setMessages(newMessages);
+    setInput("");
+
+    const res = await fetch("http://localhost:5000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: newMessages }),
+    });
+
+    const data = await res.json();
+
+    setMessages([
+      ...newMessages,
+      { role: "assistant", content: data.content },
+    ]);
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <h2>Argumentative AI Coach</h2>
+
+      <div className="chatBox">
+        {messages.map((m, i) => (
+          <div
+            key={i}
+            className={m.role === "user" ? "userMsg" : "aiMsg"}
+          >
+          <strong>
+            {m.role === "user" ? "User: " : "AI: "}
+          </strong>
+            {m.content}
+          </div>
+        ))}
+      </div>
+
+      <div className="inputRow">
+        <input
+          className="input"
+          value={input}
+          placeholder="Type your excuse..."
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+        />
+        <button className="button" onClick={sendMessage}>
+          Send
+        </button>
+      </div>
     </div>
   );
 }
