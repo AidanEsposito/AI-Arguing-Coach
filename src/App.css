@@ -17,16 +17,21 @@
   gap: 10px;
 }
 
+.userMessage,
+.aiMessage{
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 70%;
+}
+
 .userMessage {
-  text-align: right;
-  margin: 6px 0;
-  color: blue;
+  background: #dbeafe;
+  align-self: flex-end;
 }
 
 .aiMessage {
-  text-align: left;
-  margin: 6px 0;
-  color: red;
+  background: #fee2e2;
+  align-self: flex-start;
 }
 
 .inputRow {

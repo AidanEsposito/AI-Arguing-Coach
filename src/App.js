@@ -4,6 +4,8 @@ import "./App.css";
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false); //future
 
   async function sendMessage() {
     if (!input.trim()) return;
@@ -15,6 +17,7 @@ function App() {
 
     setMessages(newMessages);
     setInput("");
+    setLoading(true);
 
     const res = await fetch("http://localhost:5000/chat", {
       method: "POST",
@@ -23,6 +26,8 @@ function App() {
     });
 
     const data = await res.json();
+    setLoading(false);
+
 
     setMessages([
       ...newMessages,
@@ -46,6 +51,8 @@ function App() {
             {m.content}
           </div>
         ))}
+
+        {loading && <div className="aiMsg">AI is typing...</div>}
       </div>
 
       <div className="inputRow">
