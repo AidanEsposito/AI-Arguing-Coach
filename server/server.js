@@ -9,12 +9,32 @@ app.use(cors());
 app.use(express.json());
 
 let conversationHistory = [];
+let detectedExcuses = [];
+// let excuseCounts = {
+//   tired: 0,
+//   busy: 0,
+//   later: 0,
+// };
 
 app.post("/chat", async (req, res) => {
   try {
     const { messages } = req.body;
 
     const lastMessage = messages[messages.length - 1].content;
+
+    const lowerMessage = lastMessage.toLowerCase();
+
+    if (lowerMessage.includes("tired")) {
+      detectedExcuses.push("User often says they are tired.");
+    }
+
+    if (lowerMessage.includes("busy")) {
+      detectedExcuses.push("User claims they are too busy.");
+    }
+
+    if (lowerMessage.includes("later")) {
+      detectedExcuses.push("User delays action.");
+    }
 
     conversationHistory.push(`User: ${lastMessage}`);
 
@@ -27,6 +47,9 @@ You are an argumentative productivity coach.
 - Challenge excuses
 - Be slightly sarcastic
 - Push user to act now
+
+Known behavior patterns:
+${detectedExcuses.join("\n")}
 
 Conversation:
 ${conversationHistory.join("\n")}

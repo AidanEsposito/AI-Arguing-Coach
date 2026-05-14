@@ -1,11 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(false); //future
+  //const [darkMode, setDarkMode] = useState(false); //future
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   async function sendMessage() {
     if (!input.trim()) return;
@@ -49,6 +54,7 @@ function App() {
             {m.role === "user" ? "User: " : "AI: "}
           </strong>
             {m.content}
+            <div ref={chatEndRef}></div>
           </div>
         ))}
 
