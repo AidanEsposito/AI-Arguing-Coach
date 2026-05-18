@@ -5,6 +5,11 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [excuseCounts, setExcuseCounts] = useState({
+    tired: 0,
+    busy: 0,
+    later: 0,
+  });
   //const [darkMode, setDarkMode] = useState(false); //future
   const chatEndRef = useRef(null);
 
@@ -33,6 +38,13 @@ function App() {
     const data = await res.json();
     setLoading(false);
 
+    setExcuseCounts(
+      data.excuseCounts || {
+        tired: 0,
+        busy: 0,
+        later: 0,
+      }
+    );
 
     setMessages([
       ...newMessages,
@@ -43,6 +55,14 @@ function App() {
   return (
     <div className="container">
       <h2>Argumentative AI Coach</h2>
+
+      <div className="counterBox">
+        <h3>Excuses</h3>
+
+        <p>Tired: {excuseCounts.tired}</p>
+        <p>Busy: {excuseCounts.busy}</p>
+        <p>Later: {excuseCounts.later}</p>
+      </div>
 
       <div className="chatBox">
         {messages.map((m, i) => (

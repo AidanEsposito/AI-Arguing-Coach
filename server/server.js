@@ -10,11 +10,12 @@ app.use(express.json());
 
 let conversationHistory = [];
 let detectedExcuses = [];
-// let excuseCounts = {
-//   tired: 0,
-//   busy: 0,
-//   later: 0,
-// };
+
+let excuseCounts = {
+  tired: 0,
+  busy: 0,
+  later: 0,
+};
 
 app.post("/chat", async (req, res) => {
   try {
@@ -25,15 +26,27 @@ app.post("/chat", async (req, res) => {
     const lowerMessage = lastMessage.toLowerCase();
 
     if (lowerMessage.includes("tired")) {
-      detectedExcuses.push("User often says they are tired.");
+      excuseCounts.tired++;
+
+      if (!detectedExcuses.includes("User often says they are tired.")) {
+        detectedExcuses.push("User often says they are tired.");
+      }
     }
 
     if (lowerMessage.includes("busy")) {
-      detectedExcuses.push("User claims they are too busy.");
+      excuseCounts.busy++;
+
+      if (!detectedExcuses.includes("User claims they are too busy.")) {
+        detectedExcuses.push("User claims they are too busy.");
+      }
     }
 
     if (lowerMessage.includes("later")) {
-      detectedExcuses.push("User delays action.");
+      excuseCounts.later++;
+
+      if (!detectedExcuses.includes("User delays action.")) {
+        detectedExcuses.push("User delays action.");
+      }
     }
 
     conversationHistory.push(`User: ${lastMessage}`);
@@ -50,6 +63,7 @@ You are an argumentative productivity coach.
 
 Known behavior patterns:
 ${detectedExcuses.join("\n")}
+
 
 Conversation:
 ${conversationHistory.join("\n")}
@@ -89,7 +103,10 @@ ${conversationHistory.join("\n")}
       });
     }
 
-    res.json({ content: reply });
+    res.json({
+      content: reply,
+      excuseCounts,
+    });
 
   } catch (err) {
     console.error("ERROR:", err);
