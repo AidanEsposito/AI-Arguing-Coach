@@ -17,6 +17,16 @@ let excuseCounts = {
   later: 0,
 };
 
+const excuseKeywords = {
+  tired: ["tired", "exhausted", "sleepy", "burnt out", "no energy", "lazy",],
+  busy: ["busy", "no time", "booked", "swamped", "overloaded", "too much going on"],
+  later: ["later", "one day", "tomorrow", "afterwards", "eventually", "not now", "procrastinating"]
+};
+
+const detectCategory = (message, keywords) => {
+  return keywords.some(word => message.includes(word));
+};
+
 app.post("/chat", async (req, res) => {
   try {
     const { messages } = req.body;
@@ -25,7 +35,7 @@ app.post("/chat", async (req, res) => {
 
     const lowerMessage = lastMessage.toLowerCase();
 
-    if (lowerMessage.includes("tired")) {
+    if (detectCategory(lowerMessage, excuseKeywords.tired)) {
       excuseCounts.tired++;
 
       if (!detectedExcuses.includes("User often says they are tired.")) {
@@ -33,7 +43,7 @@ app.post("/chat", async (req, res) => {
       }
     }
 
-    if (lowerMessage.includes("busy")) {
+    if (detectCategory(lowerMessage, excuseKeywords.busy)) {
       excuseCounts.busy++;
 
       if (!detectedExcuses.includes("User claims they are too busy.")) {
@@ -41,7 +51,7 @@ app.post("/chat", async (req, res) => {
       }
     }
 
-    if (lowerMessage.includes("later")) {
+    if (detectCategory(lowerMessage, excuseKeywords.later)) {
       excuseCounts.later++;
 
       if (!detectedExcuses.includes("User delays action.")) {
