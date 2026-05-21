@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import logo from "./AIArguer.png" 
 import "./App.css";
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
 
   return (
     <div className="container">
+      <img src={logo} alt="Logo" className="logo" />
       <h2>Argumentative AI Coach</h2>
 
       <div className="counterBox">
