@@ -55,7 +55,7 @@ function App() {
 
   return (
     <div className="container">
-      <img src={logo} alt="Logo" className="logo" />
+      <img src={logo} alt="Logo" className="logo"   onClick={() => window.location.reload()} />
       <h2>Argumentative AI Coach</h2>
 
       <div className="counterBox">
