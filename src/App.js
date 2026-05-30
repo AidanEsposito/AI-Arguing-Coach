@@ -6,6 +6,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [memoryEnabled, setMemoryEnabled] = useState(false);
   const [excuseCounts, setExcuseCounts] = useState({
     tired: 0,
     busy: 0,
@@ -65,6 +66,15 @@ function App() {
         <p>Busy: {excuseCounts.busy}</p>
         <p>Later: {excuseCounts.later}</p>
       </div>
+
+      <label className="memoryToggle">
+        <input
+          type="checkbox"
+          checked={memoryEnabled}
+          onChange={() => setMemoryEnabled(!memoryEnabled)}
+        />
+        🧠 Persistent Memory
+    </label>
 
       <div className="chatBox">
         {messages.map((m, i) => (
