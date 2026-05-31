@@ -1,12 +1,19 @@
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
+const fs = require("fs");
 require("dotenv").config();
 
 const app = express();
 const PORT = 5000;
 
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.log(err));
+
 app.use(cors());
 app.use(express.json());
+
 
 let conversationHistory = [];
 let detectedExcuses = [];
@@ -29,7 +36,17 @@ const detectCategory = (message, keywords) => {
 
 app.post("/chat", async (req, res) => {
   try {
-    const { messages } = req.body;
+    const { messages, memoryEnabled } = req.body;
+
+    if (memoryEnabled) {
+      const memoryData = JSON.parse(
+        fs.readFileSync("./memory.json", "utf8")
+      );
+
+      conversationHistory = memoryData.conversationHistory;
+      detectedExcuses = memoryData.detectedExcuses;
+      excuseCounts = memoryData.excuseCounts;
+    }
 
     const lastMessage = messages[messages.length - 1].content;
 
@@ -112,6 +129,40 @@ ${conversationHistory.join("\n")}
         content: "No response from Gemini (check server logs)"
       });
     }
+
+    if (memoryEnabled) {
+      fs.writeFileSync(
+        "./memory.json",
+        JSON.stringify(
+          {
+            conversationHistory,
+            detectedExcuses,
+            excuseCounts,
+          },
+          null,
+          2
+        )
+      );
+    }
+
+    app.post("/reset-memory", (req, res) => {
+      const emptyMemory = {
+        conversationHistory: [],
+        detectedExcuses: [],
+        excuseCounts: {
+          tired: 0,
+          busy: 0,
+          later: 0,
+        },
+      };
+
+      fs.writeFileSync(
+        __dirname + "/memory.json",
+        JSON.stringify(emptyMemory, null, 2)
+      );
+
+      res.json({ success: true });
+    });
 
     res.json({
       content: reply,

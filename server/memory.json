@@ -1,0 +1,14 @@
+{
+  "conversationHistory": [
+    "User: tired",
+    "AI: \"Tired, huh? Shocking. As if no one else on the planet has ever felt a bit… *disinclined*. Is that a medical diagnosis, or just your brain's clever way of trying to opt out of reality for a bit? Because the tasks on your plate don't care about your energy levels.\n\nWhat's one tiny, minuscule action you can take *right now* to prove 'tired' isn't an impenetrable force field?\""
+  ],
+  "detectedExcuses": [
+    "User often says they are tired."
+  ],
+  "excuseCounts": {
+    "tired": 1,
+    "busy": 0,
+    "later": 0
+  }
+}
