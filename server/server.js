@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const fs = require("fs");
+const Memory = require("./Memory");
 require("dotenv").config();
 
 const app = express();
@@ -14,7 +14,6 @@ mongoose.connect(process.env.MONGO_URI)
 app.use(cors());
 app.use(express.json());
 
-
 let conversationHistory = [];
 let detectedExcuses = [];
 
@@ -25,7 +24,7 @@ let excuseCounts = {
 };
 
 const excuseKeywords = {
-  tired: ["tired", "exhausted", "sleepy", "burnt out", "no energy", "lazy",],
+  tired: ["tired", "exhausted", "sleepy", "burnt out", "no energy", "lazy"],
   busy: ["busy", "no time", "booked", "swamped", "overloaded", "too much going on"],
   later: ["later", "one day", "tomorrow", "afterwards", "eventually", "not now", "procrastinating"]
 };
@@ -39,17 +38,16 @@ app.post("/chat", async (req, res) => {
     const { messages, memoryEnabled } = req.body;
 
     if (memoryEnabled) {
-      const memoryData = JSON.parse(
-        fs.readFileSync("./memory.json", "utf8")
-      );
+      const memoryData = await Memory.findOne();
 
-      conversationHistory = memoryData.conversationHistory;
-      detectedExcuses = memoryData.detectedExcuses;
-      excuseCounts = memoryData.excuseCounts;
+      if (memoryData) {
+        conversationHistory = memoryData.conversationHistory;
+        detectedExcuses = memoryData.detectedExcuses;
+        excuseCounts = memoryData.excuseCounts;
+      }
     }
 
     const lastMessage = messages[messages.length - 1].content;
-
     const lowerMessage = lastMessage.toLowerCase();
 
     if (detectCategory(lowerMessage, excuseKeywords.tired)) {
@@ -91,7 +89,6 @@ You are an argumentative productivity coach.
 Known behavior patterns:
 ${detectedExcuses.join("\n")}
 
-
 Conversation:
 ${conversationHistory.join("\n")}
 `;
@@ -100,7 +97,9 @@ ${conversationHistory.join("\n")}
       `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           contents: [
             {
@@ -126,43 +125,31 @@ ${conversationHistory.join("\n")}
 
     if (!reply) {
       return res.json({
-        content: "No response from Gemini (check server logs)"
+        content: "No response from Gemini (check server logs)",
       });
     }
 
     if (memoryEnabled) {
-      fs.writeFileSync(
-        "./memory.json",
-        JSON.stringify(
-          {
-            conversationHistory,
-            detectedExcuses,
-            excuseCounts,
+      let memoryData = await Memory.findOne();
+
+      if (!memoryData) {
+        memoryData = new Memory({
+          conversationHistory: [],
+          detectedExcuses: [],
+          excuseCounts: {
+            tired: 0,
+            busy: 0,
+            later: 0,
           },
-          null,
-          2
-        )
-      );
+        });
+      }
+
+      memoryData.conversationHistory = conversationHistory;
+      memoryData.detectedExcuses = detectedExcuses;
+      memoryData.excuseCounts = excuseCounts;
+
+      await memoryData.save();
     }
-
-    app.post("/reset-memory", (req, res) => {
-      const emptyMemory = {
-        conversationHistory: [],
-        detectedExcuses: [],
-        excuseCounts: {
-          tired: 0,
-          busy: 0,
-          later: 0,
-        },
-      };
-
-      fs.writeFileSync(
-        __dirname + "/memory.json",
-        JSON.stringify(emptyMemory, null, 2)
-      );
-
-      res.json({ success: true });
-    });
 
     res.json({
       content: reply,
@@ -171,7 +158,34 @@ ${conversationHistory.join("\n")}
 
   } catch (err) {
     console.error("ERROR:", err);
-    res.status(500).json({ content: "Server error" });
+    res.status(500).json({
+      content: "Server error",
+    });
+  }
+});
+
+app.post("/reset-memory", async (req, res) => {
+  try {
+    await Memory.deleteMany({});
+
+    conversationHistory = [];
+    detectedExcuses = [];
+
+    excuseCounts = {
+      tired: 0,
+      busy: 0,
+      later: 0,
+    };
+
+    res.json({
+      success: true,
+    });
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      success: false,
+    });
   }
 });
 
