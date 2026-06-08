@@ -25,6 +25,7 @@
   margin-bottom: 15px;
 }
 
+
 .resetButton {
   display: flex;
   align-items: center;
@@ -67,6 +68,13 @@
 .counterBox h3 {
   margin-top: 0;
   margin-bottom: 8px;
+}
+
+.warningBox {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
 }
 
 .userMessage,

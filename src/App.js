@@ -12,6 +12,7 @@ function App() {
     busy: 0,
     later: 0,
   });
+  const [detectedExcuse, setDetectedExcuse] = useState("");
 
   const chatEndRef = useRef(null);
 
@@ -19,8 +20,33 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const excuseKeywords = {
+    tired: ["tired", "exhausted", "sleepy", "burnt out", "no energy"],
+    busy: ["busy", "no time", "swamped", "overloaded"],
+    later: ["later", "tomorrow", "eventually", "not now"],
+  };  
+
+  function detectExcuse(message) {
+    const lower = message.toLowerCase();
+
+    for (const [category, words] of Object.entries(excuseKeywords)) {
+      if (words.some(word => lower.includes(word))) {
+        return category;
+      }
+    }
+    return "";
+  }
+
   async function sendMessage() {
     if (!input.trim()) return;
+
+    const excuse = detectExcuse(input);
+
+    if (excuse) {
+      setDetectedExcuse(excuse);
+    } else {
+      setDetectedExcuse("");
+    }
 
     const newMessages = [
       ...messages,
@@ -89,6 +115,12 @@ function App() {
         <p>Busy: {excuseCounts.busy}</p>
         <p>Later: {excuseCounts.later}</p>
       </div>
+
+      {detectedExcuse && (
+      <div className="warningBox">
+        ⚠️ Excuse Detected: {detectedExcuse}
+      </div>
+      )}
 
     <div className="memorySettings">
       <label className="memoryToggle">
